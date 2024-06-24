@@ -8,7 +8,7 @@ export default function Searchbar(props) {
 
     const inputSubmited = (e)=>{
         e.preventDefault();
-        props.bringList();
+        props.submitFunc(searchbarInput);
     }
 
   return (
