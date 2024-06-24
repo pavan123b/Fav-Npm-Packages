@@ -1,7 +1,17 @@
 import React from 'react'
+import Searchbar from '../components/searchbar'
 
-export default function home() {
+export default function Home() {
+
+  const bringList = ()=>{
+    
+  }
+  
   return (
-    <div>home</div>
+    <div>
+      <Searchbar
+        bringList={bringList}
+      />
+    </div>
   )
 }
