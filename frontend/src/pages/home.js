@@ -1,119 +1,139 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
-
-import Searchbar from '../components/searchbar';
-import Reasonbox from '../components/reasonbox';
+import { HiEye, HiPencilAlt, HiTrash } from 'react-icons/hi';
 
 export default function Home({ setFavarr, favarr }) {
-  const [searchbarInput, setSearchbarInput] = useState("");
-  const [filteredPkg, setFilteredPkg] = useState([]);
-  const [selectedPackage, setSelectedPackage] = useState("");
-  const [reason, setReason] = useState("");
-  const navigate = useNavigate();
+    const [viewreason, setViewReason] = useState("");
+    const [editreason, setEditReason] = useState("");
+    const [editing, setEditing] = useState(null);        
+    const [confirmDelete, setConfirmDelete] = useState(null);  
+    const navigate = useNavigate();                      
 
-  const inputChange = (e) => {
-    setSearchbarInput(e.target.value);
-  };
+    const handleView = (reason) => {
+        setViewReason(viewreason === reason ? "" : reason);  
+        setEditing(null);       
+        setConfirmDelete(null);  
+    };
 
-  useEffect(() => {
-    if (searchbarInput !== "") {
-      bringList();
-    } else {
-      setFilteredPkg([]);
-    }
-  }, [searchbarInput]);
 
-  const bringList = async () => {
-    try {
-      const res = await axios.get(`https://api.npms.io/v2/search?q=${searchbarInput}&size=100`);
-      if (res.status === 200) {
-        const data = await res.data;
-        const filtered = data.results.map((x) => {
-          return x.package.name.toLowerCase();
-        });
-        setFilteredPkg(filtered);
-      } else {
-        console.log(`Error Message : Unable to fetch packages`);
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
+    const handleEdit = (index) => {
+        setEditReason(favarr[index].reason);   
+        setViewReason("");                    
+        setConfirmDelete(null);               
+        setEditing(index);                    
+    };
 
-  const radioClicked = (e) => {
-    setSelectedPackage(e.target.value);
-  };
+   
+    const handleSaveEdit = (index) => {
+        const temparr = [...favarr];          
+        temparr[index].reason = editreason;   
+        setFavarr(temparr);             
+        setEditing(null);                    
+        setViewReason("");                   
+    };
 
-  const addfav = () => {
-    if (!selectedPackage) {
-      alert("Please select a package.");
-      return;
-    }
-    if (!reason) {
-      alert("Please enter a reason.");
-      return;
-    }
-    if (favarr.some(pkg => pkg.name === selectedPackage)) {
-      alert("This package is already in your favorites.");
-      return;
-    }
-    setFavarr([...favarr, { name: selectedPackage, reason: reason }]);
-    setSelectedPackage("");
-    setReason("");
-    navigate('/favlist');
-  };
+    
+    const handleDelete = (index) => {
+        const temparr = favarr.filter((_, i) => i !== index);  
+        setFavarr(temparr);                   
+        setEditing(null);                    
+        setViewReason("");                    
+        setConfirmDelete(null);               
+    };
 
-  return (
-    <div className='flex justify-center p-4'>
-      <div className='w-full max-w-screen-md'>
-        <div className='mb-8'>
-          <div className='text-2xl font-semibold mb-4 text-center'>Search for NPM Packages</div>
-          <Searchbar
-            inputChange={inputChange}
-            value={searchbarInput}
-          />
-        </div>
+   
+    const handleConfirmDelete = (index) => {
+        setConfirmDelete(index);              
+        setEditing(null);                     
+        setViewReason("");                    
+    };
 
-        <div className='mb-8'>
-          <div className='text-2xl font-semibold mb-4 text-center'>Results</div>
-          <div className="mx-10 overflow-y-auto max-h-80 border p-4 rounded-lg bg-gray-100">
-            {filteredPkg.length > 0 ? (
-              filteredPkg.map((item, index) => (
-                <div key={index} className='m-3'>
-                  <input
-                    type='radio'
-                    id={item}
-                    name="packageName"
-                    value={item}
-                    onClick={radioClicked}
-                  />
-                  <label htmlFor={item} className='ml-2'>{item}</label>
+    return (
+        <div className="max-w-4xl mx-auto px-4 py-8">
+            <div className="flex justify-between items-center mb-6">
+                <div className="text-3xl">Welcome to Fav NPM Packages</div>
+                {favarr.length > 0 && (
+                    <button
+                        onClick={() => navigate('/addfavs')}
+                        className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-opacity-50"
+                    >
+                        Add Fav
+                    </button>
+                )}
+            </div>
+            <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                {favarr.length ? (
+                    <table className="w-full">
+                        <thead className="bg-gray-200 text-gray-700">
+                            <tr>
+                                <th className="py-2 px-4 text-left">Package Name</th>
+                                <th className="py-2 px-4 text-left">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {favarr.map((pkg, index) => (
+                                <tr key={index} className="border-b border-gray-200">
+                                    <td className="py-2 px-4">{pkg.name}</td>
+                                    <td className="py-2 px-4 flex items-center space-x-2">
+                                        <button onClick={() => handleView(pkg.reason)} className="text-gray-600 hover:text-gray-900 focus:outline-none">
+                                            <HiEye className="h-5 w-5" />
+                                        </button>
+                                        <button onClick={() => handleEdit(index)} className="text-gray-600 hover:text-gray-900 focus:outline-none">
+                                            <HiPencilAlt className="h-5 w-5" />
+                                        </button>
+                                        <button onClick={() => handleConfirmDelete(index)} className="text-gray-600 hover:text-red-600 focus:outline-none">
+                                            <HiTrash className="h-5 w-5" />
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                ) : (
+                    <div className="flex justify-center items-center flex-col h-64">
+                        <p className="text-center mb-4">You don't have any favs yet. Please add.</p>
+                        <button
+                            onClick={() => navigate('/addfavs')}
+                            className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-opacity-50"
+                        >
+                            Add Fav
+                        </button>
+                    </div>
+                )}
+            </div>
+            {viewreason && (
+                <div className="mt-4 bg-white rounded-lg shadow-md p-4">
+                    <h3 className="text-xl font-bold mb-2">Reason for making this your favourite:</h3>
+                    <p className='pr-4 overflow-y-auto max-h-20'>{viewreason}</p>
                 </div>
-              ))
-            ) : (
-              <div className="text-center">No NPM Packages found</div>
             )}
-          </div>
+            {editing != null && (
+                <div className="mt-4 bg-white rounded-lg shadow-md p-4">
+                    <h3 className="text-xl font-bold mb-2">Edit Reason:</h3>
+                    <textarea
+                        value={editreason}
+                        onChange={(e) => setEditReason(e.target.value)}
+                        className="w-full p-2 border border-gray-300 rounded"
+                        rows="4"
+                    />
+                    <button onClick={() => handleSaveEdit(editing)} className="mt-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-opacity-50">
+                        Save
+                    </button>
+                </div>
+            )}
+            {confirmDelete !=null && (
+                <div className="mt-4 bg-white rounded-lg shadow-md p-4">
+                    <p className="text-black font-bold">Are you sure you want to delete "{favarr[confirmDelete].name}" package?</p>
+                    <div className="flex justify-end mt-2">
+                        <button onClick={() => setConfirmDelete(null)} className="bg-gray-200 text-gray-800 font-bold py-1 px-4 rounded mr-2 focus:outline-none">
+                            Cancel
+                        </button>
+                        <button onClick={() => handleDelete(confirmDelete)} className="bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-4 rounded focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50">
+                            Delete
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
-
-        <div className='mb-8'>
-          <div className='text-2xl font-semibold mb-4 text-center'>Reason</div>
-          <Reasonbox
-            value={reason}
-            onChange={(e) => setReason(e.target.value)}
-          />
-        </div>
-
-        <div className='flex justify-center'>
-          <button
-            onClick={addfav}
-            className="bg-violet-500 hover:bg-violet-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-opacity-50"
-          >
-            Submit
-          </button>
-        </div>
-      </div>
-    </div>
-  );
+    );
 }
