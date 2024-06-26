@@ -34,6 +34,15 @@ app.post('/addfav',async (req,res)=>{
 })
 
 //edit fav reason
+app.put('/editfav',async (req,res)=>{
+    try {
+        const data=req.body;
+        await pool.query("UPDATE favlist SET reason=$1 WHERE pkgname=$2",[data.reason,data.pkgname])
+        res.json("reason edited sucessfully");
+    } catch (err) {
+        console.error(err);
+    }
+})
 
 //delete fav reason
 
