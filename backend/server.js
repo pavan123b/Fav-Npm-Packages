@@ -12,6 +12,14 @@ app.use(express.json());
 //routes
 
 //show fav list
+app.get('/displayfavs', async (req, res) => {
+    try {
+        const displayallfavs = await pool.query("SELECT (pkgname,reason) FROM favlist");
+        res.json(displayallfavs);
+    } catch (err) {
+        console.error(err);
+    }
+})
 
 //addfav
 app.post('/addfav',async (req,res)=>{
