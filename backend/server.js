@@ -24,8 +24,8 @@ app.get('/displayfavs', async (req, res) => {
 //addfav
 app.post('/addfav',async (req,res)=>{
     try {
-        const { pkgname, reason} = req.body;
-        const newfav = await pool.query("INSERT INTO favlist (pkgname,reason) VALUES($1,$2) RETURNING *", [pkgname,reason]);
+        const { name, reason} = req.body;
+        const newfav = await pool.query("INSERT INTO favlist (pkgname,reason) VALUES($1,$2)", [name,reason]);
         console.log(req.body);
         res.json(newfav);
     } catch (err) {
@@ -37,7 +37,7 @@ app.post('/addfav',async (req,res)=>{
 app.put('/editfav',async (req,res)=>{
     try {
         const data=req.body;
-        await pool.query("UPDATE favlist SET reason=$1 WHERE pkgname=$2",[data.reason,data.pkgname])
+        await pool.query("UPDATE favlist SET reason=$1 WHERE pkgname=$2",[data.reason,data.name])
         res.json("reason edited sucessfully");
     } catch (err) {
         console.error(err);
@@ -47,15 +47,24 @@ app.put('/editfav',async (req,res)=>{
 //delete fav
 app.delete('/deletefav', async (req, res) => {
     try {
-        const {pkgname} = req.body;
-        await pool.query("DELETE FROM favlist WHERE pkgname=$1", [pkgname])
+        const {name} = req.body;
+        await pool.query("DELETE FROM favlist WHERE pkgname=$1", [name])
         res.json("Package deleted sucessfully");
     } catch (err) {
         console.error(err);
     }
 })
 
-//
+//get reason
+app.get('/getreason',async (req,res)=>{
+    try {
+        const {name} = req.body;
+        const reason = await pool.query("SELECT (reason) FROM favlist WHERE pkgname=$1",[name]);
+        res.send(reason);
+    } catch (err) {
+        console.error(err);
+    }
+})
 
 
 app.listen(4000, ()=>{
