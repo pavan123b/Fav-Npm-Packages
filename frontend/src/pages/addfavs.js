@@ -43,7 +43,7 @@ export default function Addfavs({ setFavarr, favarr }) {
     setSelectedPackage(e.target.value);
   };
 
-  const addfav = () => {
+  const addfav = async () => {
     if(selectedPackage===""){
       alert("Please select a package.");
     }
@@ -55,9 +55,21 @@ export default function Addfavs({ setFavarr, favarr }) {
     }
     else{
       setFavarr([...favarr, { name: selectedPackage, reason: reason }]);
-      setSelectedPackage("");
-      setReason("");
-      navigate('/');
+      const body = { name: selectedPackage, reason: reason }
+      try {
+        const res = await axios.post("http://localhost:4000/addfav", body, {
+          headers: { "Content-type": "application/json" }
+        })
+        if(res.status === 200){
+          setSelectedPackage("");
+          setReason("");
+          navigate('/');
+        }else{
+          console.log("Error : Unable to add Package");
+        }
+      } catch (err) {
+          console.error(err);
+      }
     }
     
   };
