@@ -44,7 +44,16 @@ app.put('/editfav',async (req,res)=>{
     }
 })
 
-//delete fav reason
+//delete fav
+app.delete('/deletefav', async (req, res) => {
+    try {
+        const {pkgname} = req.body;
+        await pool.query("DELETE FROM favlist WHERE pkgname=$1", [pkgname])
+        res.json("Package deleted sucessfully");
+    } catch (err) {
+        console.error(err);
+    }
+})
 
 //
 
